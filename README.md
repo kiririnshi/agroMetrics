@@ -17,6 +17,9 @@ Limpieza y normalizacion de los datos, se deben tomar decisiones con respecto a 
 
 "2026-01-02","5","Región de Valparaíso","Femacal de La Calera","Hortalizas y tubérculos","Ajo","Chino","Primera","$/malla 10 kilos","China","40","17000,0000","17000,0000","17000,0000"
 
-
+* Columnas 2,3,4,5,6,7,9 necesitan normalizacion; sacar mayusculas, acentos ortograficos y reemplazar espacios por guiones bajos.
+* En las ultimas 3 columnas se hace necesario pasar las comas de estos numeros a puntos.
+* En columna "Unidad de comercializacion" eliminar caracteres "$/" al inicio. 
+* En la columna "Origen", seria util que las regiones sean las mismas que se ponen en la columna "Region", 
 
 
