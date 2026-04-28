@@ -22,4 +22,9 @@ Limpieza y normalizacion de los datos, se deben tomar decisiones con respecto a 
 * En columna "Unidad de comercializacion" eliminar caracteres "$/" al inicio. (done)
 * En la columna "Origen", seria util que las regiones sean las mismas que se ponen en la columna "Region", (pendiente)
 
+## Modelos
+
+Instalar BD postgresql para iniciar la creacion de modelos en django. Lo mejor podria haber sido usar contenedores, pero no es lo mas importante para este proyecto, al menos no en esta etapa.
+
+
 
