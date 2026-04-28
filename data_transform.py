@@ -16,6 +16,8 @@ def clean_data(df):
 
     df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
 
-    breakpoint()
+    df["Unidad de comercializacion"] = [c.strip().lower().replace("$/", "").replace(" ", "_") for c in df["Unidad de comercializacion"]]
 
-    return ""
+    #df = df.dropna(subset=["fecha", "producto"]) # Remover valores NA, por ahora no se han visto en el dataset asi que no se usa.
+
+    return df
