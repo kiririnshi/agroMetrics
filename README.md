@@ -28,11 +28,16 @@ Limpieza y normalizacion de los datos, se deben tomar decisiones con respecto a 
 
 Instalar BD postgresql para iniciar la creacion de modelos en django. Lo mejor podria haber sido usar contenedores, pero no es lo mas importante para este proyecto, al menos no en esta etapa.
 
+python sql.py run
+
 Para llenar estos modelos, una vez migrados mediante django, se hace necesario usar una herramienta como sqlalchemy que conecte
 los datos con la BD.
 
 No es problematico el llenar modelos como el de Region y Producto, pero si los demas ya que tienen claves foraneas.
-Asi que esta parte no es tan trivial como las otras.
+Asi que esta parte no es tan trivial como las otras. Se hace necesario usar mas pandas para hacer merge a algunas tablas y todo eso.
+
+## Crear views y queries para base app
+
 
 
 
