@@ -51,6 +51,31 @@ def load_region(df: pd.DataFrame, engine) -> None:
     )
     print(f"  [Region]   {len(df_region):,} filas procesadas")
 
+def load_producto(df: pd.DataFrame, engine) -> None:
+    df_producto = (
+        df[["Producto", "Variedad / Tipo", 
+            "Calidad", "Unidad de comercializacion", 
+            "Origen"]]
+        .drop_duplicates() # Solo es necesario guardar las regiones y su id, sin duplicados
+        .rename(columns={"Producto": "nombre", "Variedad / Tipo": "variedad", 
+                         "Calidad": "calidad", "Unidad de comercializacion": "unidad_comercio", 
+                         "Origen" : "origen"})
+    )
+
+    # Normaliza cadenas vacías a NULL para respetar la unique constraint
+    df_producto["variedad"] = df_producto["variedad"].where(df_producto["variedad"].notna(), None)
+    df_producto["calidad"]  = df_producto["calidad"].where(df_producto["calidad"].notna(), None)
+    df_producto = _add_timestamps(df_producto)
+
+    df_producto.to_sql(
+        TABLE_PRODUCTO,
+        engine,
+        if_exists="append",
+        index=False,
+        method=_insert_ignore,
+    )
+    print(f"  [Producto]   {len(df_producto):,} filas procesadas")
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def run():
@@ -62,7 +87,7 @@ def run():
 
     print("Cargando tablas (orden: Region → Producto → Mercado → Snapshot)")
     load_region(df, engine)
-    #load_producto(df, engine)
+    load_producto(df, engine)
     #load_mercado(df, engine)
     #load_snapshot(df, engine)
 
