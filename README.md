@@ -3,7 +3,9 @@ Cleaning agronomics data and making a dashboard out of it.
 
 ## Pipeline de datos.
 
-extract -> transform -> 
+extract -> transform -> metrics ???
+
+Las metricas podrian servir dependiendo de las preguntas que quiero responder con los datos.
 
 data_extract.py
 
@@ -29,6 +31,8 @@ Instalar BD postgresql para iniciar la creacion de modelos en django. Lo mejor p
 Para llenar estos modelos, una vez migrados mediante django, se hace necesario usar una herramienta como sqlalchemy que conecte
 los datos con la BD.
 
-No es problematico el llenar modelos como el de Region, pero si los demas, ya que tienen claves foraneas.
+No es problematico el llenar modelos como el de Region y Producto, pero si los demas ya que tienen claves foraneas.
 Asi que esta parte no es tan trivial como las otras.
+
+
 
