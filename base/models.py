@@ -9,18 +9,20 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+class Unidad(models.Model):
+    nombre = models.CharField(max_length=50)  # kg, unidad, caja
+    tipo = models.CharField(max_length=50)    # peso 
 
 class Producto(BaseModel):
     nombre = models.CharField(max_length=255)
-    variedad = models.CharField(max_length=255, null=True, blank=True)
-    calidad = models.CharField(max_length=255, null=True, blank=True)
-    unidad_comercio = models.CharField(max_length=255)
+    variedad = models.CharField(max_length=255, blank=True, default="")
+    calidad = models.CharField(max_length=255, blank=True, default="")
     origen = models.CharField(max_length=255)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["nombre", "variedad", "calidad"],
+                fields=["nombre", "variedad", "calidad", "origen"],
                 name="unique_producto"
             )
         ]
@@ -47,6 +49,7 @@ class Snapshot(BaseModel):
 
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     mercado = models.ForeignKey(Mercado, on_delete=models.CASCADE)
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, null=True, blank=True)
     
     precio_minimo = models.DecimalField(max_digits=12, decimal_places=2)
     precio_maximo = models.DecimalField(max_digits=12, decimal_places=2)

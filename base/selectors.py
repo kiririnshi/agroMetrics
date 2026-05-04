@@ -17,6 +17,8 @@ def producto_mean_list():
     resultado = Snapshot.objects.filter(
         producto__in=productos
     ).aggregate(promedio=Avg('precio_promedio'))
+
+    breakpoint()
     
     mean_list = Snapshot.objects.filter()
     return mean_list
