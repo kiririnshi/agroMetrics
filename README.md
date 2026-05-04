@@ -38,6 +38,9 @@ Asi que esta parte no es tan trivial como las otras. Se hace necesario usar mas 
 
 ## Crear views y queries para base app
 
+Se hace necesario obtener las siguientes metricas:
+
+* Ranking de Productos Más Caros: Promediar precios por producto, ordenar de menor a mayor, seleccionar top N.
 
 
 
