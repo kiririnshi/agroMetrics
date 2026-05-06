@@ -58,11 +58,11 @@ def normalizar_unidad(texto: str) -> dict: # Utilizado solo para la conversion d
 
     # Aqui entran textos del tipo "caja_18_kilos"
 
-    texto = texto.replace("_", " ")
+    texto_mod = texto.replace("_", " ")
 
 
     # Patrón peso: "caja 10 kg", "malla 5.5 kg", "10kg", "10 kg"
-    match_kg = re.search(r'(\d+(?:\.\d+)?)\s*(kg|kilo|kilos)', texto)
+    match_kg = re.search(r'(\d+(?:\.\d+)?)\s*(kg|kilo|kilos)', texto_mod)
     if match_kg:
         return {
             "unidad": "kg",
@@ -70,7 +70,7 @@ def normalizar_unidad(texto: str) -> dict: # Utilizado solo para la conversion d
         }
 
     # Patrón conteo explícito: "60 unidades", "12 unidades"
-    match_unidades = re.search(r'(\d+(?:\.\d+)?)\s*unidades?', texto)
+    match_unidades = re.search(r'(\d+(?:\.\d+)?)\s*unidades?', texto_mod)
     if match_unidades:
         return {
             "unidad": "unidades",
@@ -78,7 +78,7 @@ def normalizar_unidad(texto: str) -> dict: # Utilizado solo para la conversion d
         }
 
     # Patrón docena: "docena", "docena de matas"
-    if "docena" in texto:
+    if "docena" in texto_mod:
         return {
             "unidad": "unidades",
             "cantidad": 12,
@@ -125,10 +125,10 @@ def load_unidad(df: pd.DataFrame, engine) -> None: # Esto es complejo, ya que no
     df_unidades = (
         df[["Unidad de comercializacion"]]
             .drop_duplicates()
-            .rename(columns={"Unidad de comercializacion": "nombre"})
+            .rename(columns={"Unidad de comercializacion": "nombre_original"})
         )
 
-    normalizadas = df_unidades["nombre"].apply(lambda x: pd.Series(normalizar_unidad(x)))
+    normalizadas = df_unidades["nombre_original"].apply(lambda x: pd.Series(normalizar_unidad(x)))
 
     df_unidades = pd.concat([df_unidades, normalizadas], axis=1)
 
@@ -146,12 +146,10 @@ def load_unidad(df: pd.DataFrame, engine) -> None: # Esto es complejo, ya que no
 def load_producto(df: pd.DataFrame, engine) -> None:
     df_producto = (
         df[["Producto", "Variedad / Tipo", 
-            "Calidad", "Unidad de comercializacion", 
             "Origen"]]
         .drop_duplicates() # Solo es necesario guardar las regiones y su id, sin duplicados
         .rename(columns={"Producto": "nombre", "Variedad / Tipo": "variedad", 
-                         "Calidad": "calidad", "Unidad de comercializacion": "unidad_comercio", 
-                         "Origen" : "origen"})
+                         "Calidad": "calidad", "Origen" : "origen"})
     )
 
     # Normaliza cadenas vacías a NULL para respetar la unique constraint
@@ -216,6 +214,9 @@ def load_snapshot(df: pd.DataFrame, engine) -> None:
                  f"JOIN {TABLE_REGION} r ON m.region_id = r.id"),
             conn,
         )
+
+        unidades_db  = pd.read_sql(text(f"SELECT id, nombre_original FROM {TABLE_UNIDAD}"), conn)
+
     
 
     df_snap = df.rename(columns={
@@ -226,6 +227,7 @@ def load_snapshot(df: pd.DataFrame, engine) -> None:
         "Mercado":        "nombre_mercado",
         "ID region":      "id_region",
         "Volumen":        "volumen",
+        "Unidad de comercializacion": "nombre_original", 
         "Precio minimo":  "precio_minimo",
         "Precio maximo":  "precio_maximo",
         "Precio promedio":"precio_promedio",
@@ -234,6 +236,7 @@ def load_snapshot(df: pd.DataFrame, engine) -> None:
     # Normaliza nulos para el merge con productos
     df_snap["variedad"] = df_snap["variedad"].where(df_snap["variedad"].notna(), None)
     df_snap["calidad"]  = df_snap["calidad"].where(df_snap["calidad"].notna(), None)
+
 
     # Merge → producto_id
     df_snap = df_snap.merge(
@@ -249,9 +252,14 @@ def load_snapshot(df: pd.DataFrame, engine) -> None:
         how="left",
     )
 
+    df_snap = df_snap.merge(
+        unidades_db.rename(columns={"id": "unidad_id"}),
+        on="nombre_original", how="left",  # left → unidad_id queda null si no matchea
+    )
+
     # Columnas finales para la tabla
     df_final = df_snap[[
-        "fecha", "producto_id", "mercado_id",
+        "fecha", "producto_id", "mercado_id", "unidad_id",
         "precio_minimo", "precio_maximo", "precio_promedio", "volumen",
     ]]
     df_final = _add_timestamps(df_final)
@@ -275,11 +283,11 @@ def run():
     engine = create_engine(DATABASE_URL) # Conectarse a DB postgres
 
     print("Cargando tablas (orden: Region → Producto → Mercado → Snapshot)")
-    load_region(df, engine)
-    load_unidad(df, engine)
-    load_producto(df, engine)
-    load_mercado(df, engine)
-    load_snapshot(df, engine)
+    #load_region(df, engine)
+    #load_unidad(df, engine)
+    #load_producto(df, engine)
+    #load_mercado(df, engine)
+    load_snapshot(df, engine) #### Probar esto !!!
 
     print("\n✓ Carga completada.")
 

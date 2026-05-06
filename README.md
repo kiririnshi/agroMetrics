@@ -36,6 +36,8 @@ los datos con la BD.
 No es problematico el llenar modelos como el de Region y Producto, pero si los demas ya que tienen claves foraneas.
 Asi que esta parte no es tan trivial como las otras. Se hace necesario usar mas pandas para hacer merge a algunas tablas y todo eso.
 
+(update 06/05) Se genero un problema al obtener un promedio por producto; muchos de ellos estan en unidades distintas como kilos, docenas o unidades, esto hace necesario que se cree un modelo de Unidad para hacer las queries de promedios tomando esto en concideracion. 
+
 ## Crear views y queries para base app
 
 Se hace necesario obtener las siguientes metricas:
