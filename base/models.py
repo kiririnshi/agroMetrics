@@ -9,7 +9,7 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-class Unidad(models.Model):
+class Unidad(BaseModel):
     nombre = models.CharField(max_length=50, null=True, blank=True)  # kg, unidad, caja
     unidad = models.CharField(max_length=50, null=True, blank=True)    # peso 
     cantidad = models.CharField(max_length=50, null=True, blank=True)    # peso 

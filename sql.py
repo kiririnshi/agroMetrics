@@ -26,6 +26,7 @@ DATABASE_URL = "postgresql://postgres:1234@localhost:5432/postgres"
 # Nombres de mis tablas en la base de datos postgresql
 APP_LABEL = "base"
 TABLE_REGION   = f"{APP_LABEL}_region"
+TABLE_UNIDAD   = f"{APP_LABEL}_unidad"
 TABLE_PRODUCTO = f"{APP_LABEL}_producto"
 TABLE_MERCADO  = f"{APP_LABEL}_mercado"
 TABLE_SNAPSHOT = f"{APP_LABEL}_snapshot"
@@ -131,16 +132,16 @@ def load_unidad(df: pd.DataFrame, engine) -> None: # Esto es complejo, ya que no
 
     df_unidades = pd.concat([df_unidades, normalizadas], axis=1)
 
-    df_region = _add_timestamps(df_region)
+    df_unidades = _add_timestamps(df_unidades)
 
-    df_region.to_sql(
-        TABLE_REGION,
+    df_unidades.to_sql(
+        TABLE_UNIDAD,
         engine,
         if_exists="append",
         index=False,
         method=_insert_ignore,
     )
-    print(f"  [Region]   {len(df_region):,} filas procesadas")
+    print(f"  [Unidad]   {len(df_unidades):,} filas procesadas")
 
 def load_producto(df: pd.DataFrame, engine) -> None:
     df_producto = (
@@ -274,11 +275,11 @@ def run():
     engine = create_engine(DATABASE_URL) # Conectarse a DB postgres
 
     print("Cargando tablas (orden: Region → Producto → Mercado → Snapshot)")
-    #load_region(df, engine)
+    load_region(df, engine)
     load_unidad(df, engine)
-    #load_producto(df, engine)
-    #load_mercado(df, engine)
-    #load_snapshot(df, engine)
+    load_producto(df, engine)
+    load_mercado(df, engine)
+    load_snapshot(df, engine)
 
     print("\n✓ Carga completada.")
 
