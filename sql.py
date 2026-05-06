@@ -15,6 +15,7 @@ Ejecución:
 
 import pandas as pd
 from datetime import datetime, timezone
+import re
 from sqlalchemy import create_engine, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -34,7 +35,7 @@ def _insert_ignore(table, conn, keys, data_iter):
     Versión genérica usando el nombre de tabla dinámico desde el objeto `table`.
     Compatible con pandas >= 1.3 y SQLAlchemy >= 1.4
     """
-    from sqlalchemy import Table, MetaData
+    from sqlalchemy import MetaData
     meta = MetaData()
     meta.reflect(bind=conn, only=[table.name])
     tbl = meta.tables[table.name]
@@ -49,6 +50,41 @@ def _add_timestamps(df: pd.DataFrame) -> pd.DataFrame: # Las tablas guardan la f
     df["updated_at"] = now
     return df
 
+def normalizar_unidad(texto: str) -> dict: # Utilizado solo para la conversion de Unidades de comercializacion a un formato mas amigable para la BD.
+
+    if pd.isna(texto):
+        return {"unidad": None, "cantidad": None}
+
+    # Aqui entran textos del tipo "caja_18_kilos"
+
+    texto = texto.replace("_", " ")
+
+
+    # Patrón peso: "caja 10 kg", "malla 5.5 kg", "10kg", "10 kg"
+    match_kg = re.search(r'(\d+(?:\.\d+)?)\s*(kg|kilo|kilos)', texto)
+    if match_kg:
+        return {
+            "unidad": "kg",
+            "cantidad": float(match_kg.group(1)),
+        }
+
+    # Patrón conteo explícito: "60 unidades", "12 unidades"
+    match_unidades = re.search(r'(\d+(?:\.\d+)?)\s*unidades?', texto)
+    if match_unidades:
+        return {
+            "unidad": "unidades",
+            "cantidad": float(match_unidades.group(1)),
+        }
+
+    # Patrón docena: "docena", "docena de matas"
+    if "docena" in texto:
+        return {
+            "unidad": "unidades",
+            "cantidad": 12,
+        }
+
+    return {"unidad": None, "cantidad": None}
+
 # Load functions
 
 def load_region(df: pd.DataFrame, engine) -> None:
@@ -57,6 +93,44 @@ def load_region(df: pd.DataFrame, engine) -> None:
         .drop_duplicates() # Solo es necesario guardar las regiones y su id, sin duplicados
         .rename(columns={"ID region": "id_region", "Region": "nombre"}) # Es necesario cambiar los indices a aquellos que tiene la base de datos
     )
+    df_region = _add_timestamps(df_region)
+
+    df_region.to_sql(
+        TABLE_REGION,
+        engine,
+        if_exists="append",
+        index=False,
+        method=_insert_ignore,
+    )
+    print(f"  [Region]   {len(df_region):,} filas procesadas")
+
+def load_unidad(df: pd.DataFrame, engine) -> None: # Esto es complejo, ya que no existen unidades muy estandares en esta columna para poder llevarlas al modelo. 
+
+    ## Este codigo sirve para dilusidar cuales son las entradas que deberia agreagar al modelo unidades y cuales ignorar.
+
+    #unidades = (
+    #df["Unidad de comercializacion"]
+    #.str.strip()          # elimina espacios al inicio/fin
+    #.str.lower()          # normaliza mayúsculas para no contar duplicados
+    #.value_counts()       # ordena por frecuencia
+    #.reset_index()
+    #)
+    #unidades.columns = ["unidad", "frecuencia"]
+
+    # Solo dos tipos: kg y unidades, el resto debe ser tratado como nulls. 
+    # Es necesario transformar las entradas mediante expreciones regulares (regex)
+
+
+    df_unidades = (
+        df[["Unidad de comercializacion"]]
+            .drop_duplicates()
+            .rename(columns={"Unidad de comercializacion": "nombre"})
+        )
+
+    normalizadas = df_unidades["nombre"].apply(lambda x: pd.Series(normalizar_unidad(x)))
+
+    df_unidades = pd.concat([df_unidades, normalizadas], axis=1)
+
     df_region = _add_timestamps(df_region)
 
     df_region.to_sql(
@@ -200,10 +274,11 @@ def run():
     engine = create_engine(DATABASE_URL) # Conectarse a DB postgres
 
     print("Cargando tablas (orden: Region → Producto → Mercado → Snapshot)")
-    load_region(df, engine)
-    load_producto(df, engine)
-    load_mercado(df, engine)
-    load_snapshot(df, engine)
+    #load_region(df, engine)
+    load_unidad(df, engine)
+    #load_producto(df, engine)
+    #load_mercado(df, engine)
+    #load_snapshot(df, engine)
 
     print("\n✓ Carga completada.")
 
