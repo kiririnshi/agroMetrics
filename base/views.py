@@ -28,7 +28,8 @@ def get_producto_list(request):
 @api_view(['GET'])
 def get_producto_list_by_mean(request):
     productos_mean = producto_mean_list()
-    breakpoint("view")
+    # {'promedio': Decimal('5563.2853906820505331')}
+    return JsonResponse()
 
 def get_snapshots(request):
     if (request.method == 'GET'):
