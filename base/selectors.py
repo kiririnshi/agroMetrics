@@ -15,7 +15,7 @@ def producto_mean_list():
         # ss = Snapshot.objects.filter(producto=q).values('precio_promedio').annotate(dcount = Avg('precio_promedio')).order_by('precio_promedio') 
         #snapshots = Snapshot.objects.filter()
 
-    kg = Unidad.objects.filter(unidad = 'kg')
+    #kg = Unidad.objects.filter(unidad = 'kg')
 
     breakpoint()
     

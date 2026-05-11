@@ -307,6 +307,11 @@ def load_snapshot(df: pd.DataFrame, engine) -> None:
     ]]
     df_final = _add_timestamps(df_final)
 
+    #### TEST #####
+
+    #df_final = df_final.iloc[0:100]
+
+
     df_final.to_sql(
         TABLE_SNAPSHOT,
         engine,
@@ -325,11 +330,11 @@ def run():
 
     engine = create_engine(DATABASE_URL) # Conectarse a DB postgres
 
-    print("Cargando tablas (orden: Region → Producto → Mercado → Snapshot)")
-    #load_region(df, engine)
-    #load_unidad(df, engine)
-    #load_producto(df, engine)
-    #load_mercado(df, engine)
+    print("Cargando tablas (orden: Region → Unidad -> Producto → Mercado → Snapshot)")
+    load_region(df, engine)
+    load_unidad(df, engine)
+    load_producto(df, engine)
+    load_mercado(df, engine)
     load_snapshot(df, engine) #### Probar esto !!!
 
     print("\n✓ Carga completada.")
