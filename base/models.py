@@ -10,7 +10,7 @@ class BaseModel(models.Model):
         abstract = True
 
 class Unidad(BaseModel):
-    nombre_original = models.CharField(max_length=50, null=True, blank=True)  # caja 20 kilos
+    nombre_original = models.CharField(max_length=50, unique=True)  # caja 20 kilos
     unidad = models.CharField(max_length=50, null=True, blank=True)    # kg 
     cantidad = models.CharField(max_length=50, null=True, blank=True)    # 20 
 

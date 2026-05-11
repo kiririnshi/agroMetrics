@@ -44,6 +44,28 @@ def _insert_ignore(table, conn, keys, data_iter):
     stmt = stmt.on_conflict_do_nothing()
     conn.execute(stmt)
 
+def _insert_or_update(table, conn, keys, data_iter):
+    from sqlalchemy import Table, MetaData
+    meta = MetaData()
+    meta.reflect(bind=conn, only=[table.name])
+    tbl = meta.tables[table.name]
+    
+    rows = [dict(zip(keys, row)) for row in data_iter]
+    stmt = pg_insert(tbl).values(rows)
+    
+    # Columnas a actualizar cuando hay conflicto (todo excepto la PK y created_at)
+    update_cols = {
+        col.name: stmt.excluded[col.name]
+        for col in tbl.columns
+        if col.name not in ("id", "created_at")
+    }
+    
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["nombre_original"],  # la columna unique
+        set_=update_cols,
+    )
+    conn.execute(stmt)
+
 def _add_timestamps(df: pd.DataFrame) -> pd.DataFrame: # Las tablas guardan la fecha de creacion y update, es necesario tambien mandarlas cuando se llenan 
     now = datetime.now(timezone.utc)
     df = df.copy()
@@ -58,7 +80,7 @@ def normalizar_unidad(texto: str) -> dict: # Utilizado solo para la conversion d
 
     # Aqui entran textos del tipo "caja_18_kilos"
 
-    texto_mod = texto.replace("_", " ")
+    texto_mod = texto.replace("_", " ").strip()
 
 
     # Patrón peso: "caja 10 kg", "malla 5.5 kg", "10kg", "10 kg"
@@ -83,6 +105,26 @@ def normalizar_unidad(texto: str) -> dict: # Utilizado solo para la conversion d
             "unidad": "unidades",
             "cantidad": 12,
         }
+
+    # Patron de kilo o unidades por si solos, estos no los toman en cuenta los bloques anteriores.
+    if re.search(r'^kilo(?:gramo)?s?$|^kg$', texto_mod):
+        return {
+            "unidad":"kg",
+            "cantidad": 1,
+            }
+
+    if re.search(r'^unidades?$', texto_mod): 
+        return {
+            "unidad": "unidades",
+            "cantidad": 1, 
+            }
+    
+    if texto_mod == "unidad":
+        return {
+            "unidad": "unidades",
+            "cantidad": 1, 
+            }
+
 
     return {"unidad": None, "cantidad": None}
 
@@ -139,7 +181,7 @@ def load_unidad(df: pd.DataFrame, engine) -> None: # Esto es complejo, ya que no
         engine,
         if_exists="append",
         index=False,
-        method=_insert_ignore,
+        method=_insert_or_update,
     )
     print(f"  [Unidad]   {len(df_unidades):,} filas procesadas")
 
@@ -254,7 +296,8 @@ def load_snapshot(df: pd.DataFrame, engine) -> None:
 
     df_snap = df_snap.merge(
         unidades_db.rename(columns={"id": "unidad_id"}),
-        on="nombre_original", how="left",  # left → unidad_id queda null si no matchea
+        on="nombre_original", 
+        how="left",  # left → unidad_id queda null si no matchea
     )
 
     # Columnas finales para la tabla
