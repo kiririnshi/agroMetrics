@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Producto
+from .models import Mercado, Producto, Region
 
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,3 +13,13 @@ class ProductoSerializer(serializers.ModelSerializer):
             allowed = set(fields)
             for field in set(self.fields) - allowed:
                 self.fields.pop(field)
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+class MercadoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mercado
+        fields = '__all__'
