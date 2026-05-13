@@ -32,7 +32,7 @@ class MercadoSerializer(serializers.ModelSerializer):
 class UnidadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Unidad
-        fields = ["nombre_original", "unidad", "cantidad"]
+        fields = ["unidad", "cantidad"]
 
 #class SnapshotSerializer(serializers.ModelSerializer):
 #    class Meta:
@@ -40,9 +40,9 @@ class UnidadSerializer(serializers.ModelSerializer):
 #        fields = '__all__'
 
 class SnapshotSerializer(serializers.ModelSerializer):
-    producto = ProductoSerializer(read_only=True,  fields=["nombre", "variedad", "calidad", "origen"])
+    producto = ProductoSerializer(fields=["nombre", "variedad", "calidad", "origen"])
     mercado = MercadoSerializer(read_only=True)
-    unidad = UnidadSerializer(read_only=True)
+    unidad = UnidadSerializer()
 
     class Meta:
         model = Snapshot

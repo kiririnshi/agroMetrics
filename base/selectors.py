@@ -42,7 +42,7 @@ def producto_mean_list(producto, unidad) -> list: # {'promedio': Decimal('5563.2
     resultado = Snapshot.objects.filter(
         producto__in = productos,
         unidad__in = kilos 
-    )
+    ).order_by('fecha')
     #.aggregate(promedio=Avg('precio_promedio'))
     
     return resultado
