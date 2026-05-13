@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Mercado, Producto, Region
+from .models import Mercado, Producto, Region, Snapshot, Unidad
 
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,3 +28,22 @@ class MercadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mercado
         fields = ['nombre', 'sub_sector', 'region']
+
+class UnidadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unidad
+        fields = ["nombre_original", "unidad", "cantidad"]
+
+#class SnapshotSerializer(serializers.ModelSerializer):
+#    class Meta:
+#        model = Snapshot
+#        fields = '__all__'
+
+class SnapshotSerializer(serializers.ModelSerializer):
+    producto = ProductoSerializer(read_only=True,  fields=["nombre", "variedad", "calidad", "origen"])
+    mercado = MercadoSerializer(read_only=True)
+    unidad = UnidadSerializer(read_only=True)
+
+    class Meta:
+        model = Snapshot
+        fields = ['fecha','producto', 'mercado', 'unidad', 'precio_promedio']

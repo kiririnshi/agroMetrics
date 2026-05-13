@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from .models import Producto, Snapshot, Region
 from .selectors import mercado_list, producto_list, producto_mean_list, region_list
-from .serializers import MercadoSerializer, ProductoSerializer, RegionSerializer
+from .serializers import MercadoSerializer, ProductoSerializer, RegionSerializer, SnapshotSerializer
 
 
 @api_view(['GET'])
@@ -35,12 +35,12 @@ def get_productos(request):
 
 @api_view(['GET'])
 def get_producto_list_by_mean(request):
-    productos_mean = producto_mean_list()
-    # {'promedio': Decimal('5563.2853906820505331')}
-    return JsonResponse(productos_mean, safe=False)
+    producto = request.query_params.get('producto') # ej: arandano
+    unidad = request.query_params.get('unidad') # ej: kg
+    productos_mean = producto_mean_list(producto, unidad)
 
-#@api_view(['GET'])
-#def get_snapshot_by_region_or_product(request):
+    serializer = SnapshotSerializer(productos_mean, many=True)
+    return Response(serializer.data)
 
 def get_snapshots(request):
     if (request.method == 'GET'):
