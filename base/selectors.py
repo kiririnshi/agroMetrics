@@ -3,7 +3,7 @@ from django.db.models import Avg, Count, QuerySet
 from .models import Mercado, Producto, Region, Snapshot, Unidad
 
 def mercado_list(region) -> QuerySet[Mercado]:
-    return Mercado.objects.filter(region__id = region)
+    return Mercado.objects.filter(region__id_region = region)
 
 def producto_list() -> QuerySet[Producto]:
     return Producto.objects.all().distinct().order_by('nombre') 

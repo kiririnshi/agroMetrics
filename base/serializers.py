@@ -17,9 +17,14 @@ class ProductoSerializer(serializers.ModelSerializer):
 class RegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Region
-        fields = '__all__'
+        fields = ['id_region', 'nombre']
 
 class MercadoSerializer(serializers.ModelSerializer):
+    region = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='nombre'  # Quiero mostrar este camnpo del modelo Region
+    )
+
     class Meta:
         model = Mercado
-        fields = '__all__'
+        fields = ['nombre', 'sub_sector', 'region']

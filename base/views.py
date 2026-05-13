@@ -16,7 +16,7 @@ from .serializers import MercadoSerializer, ProductoSerializer, RegionSerializer
 
 @api_view(['GET'])
 def get_regiones(request):
-    regiones = region_list().values('id_region', 'nombre')
+    regiones = region_list()
     serializer = RegionSerializer(regiones, many=True)
     return Response(serializer.data)
 
@@ -27,24 +27,20 @@ def get_mercados_by_region(request):
     serializer = MercadoSerializer(mercados, many=True)
     return Response(serializer.data)
 
-
 @api_view(['GET'])
 def get_productos(request):
-    productos = producto_list().values('nombre')
-    serializer = ProductoSerializer(productos, many=True, fields=["nombre"])
+    productos = producto_list()
+    serializer = ProductoSerializer(productos, many=True, fields=["nombre", "variedad", "calidad", "origen"]) # Mandar fields=["algo"] si solo quiero un campo
     return Response(serializer.data)
 
 @api_view(['GET'])
 def get_producto_list_by_mean(request):
     productos_mean = producto_mean_list()
     # {'promedio': Decimal('5563.2853906820505331')}
-    return JsonResponse()
+    return JsonResponse(productos_mean, safe=False)
 
 #@api_view(['GET'])
 #def get_snapshot_by_region_or_product(request):
-
-
-
 
 def get_snapshots(request):
     if (request.method == 'GET'):
